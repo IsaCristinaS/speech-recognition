@@ -1,34 +1,68 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import styled from "styled-components";
+import { MicrophoneIcon } from "./assets/icons/microphone";
+import { Speech } from "./styled";
+import { useState, useEffect } from "react";
 
 function App() {
-  const [count, setCount] = useState(0)
 
+  const [ status, setStatus ] = useState<string>("Said Hello!");
+  const message = "To be able to use the voice, allow access to the microphone.";
+
+  const [ transcript, setTranscript] = useState<string>("");
+  const [ isListening, setIsListening] = useState<boolean>(false);
+  const [ isChangeTheme, setIsChangeTheme ] = useState<boolean>(false);  
+  
+  useEffect( () => { 
+    if (isListening) {
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.lang = "pt-br";
+      recognition.onresult = (event:any) => {
+        const result = event.results[0][0].transcript;
+        setTranscript(prevTranscript => prevTranscript + " " + result);
+       
+        if (result == "mudar tema") toggleTheme()
+
+        setStatus("I'm listening");
+        recognition.stop();
+      };
+      
+      recognition.start();
+    
+    }
+    
+    setStatus("Say hello!")
+  }, [isListening]);
+
+  useEffect(() => {
+    if(!isChangeTheme) return;
+
+
+    alert("TROCOU O TEMA")
+  }, [isChangeTheme])
+  
+  const toggleListening = () => setIsListening(!isListening);
+
+  const toggleTheme = () => setIsChangeTheme(!isChangeTheme);
+  
+  
+  {/*HTML ↓*/}
+  
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <Speech changeTheme={isChangeTheme}>
+      <div className={isListening ? "speech_microphone-1 speech-animation" : "speech_microphone-1"}>
+        <div className={isListening ? "speech_microphone-2 speech-animation" : "speech_microphone-2"}>
+          <div className={isListening ? "speech_microphone-3 speech-animation" : "speech_microphone-3"}  
+           onClick={toggleListening}>
+            <MicrophoneIcon/>
+          </div>
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+
+      <div className="speech_information">
+        <h4>{status}</h4>
+        <p>{transcript ? transcript : message}</p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </Speech>
   )
 }
 
