@@ -15,6 +15,7 @@ function App() {
   useEffect( () => { 
     if (isListening) {
       const recognition = new window.webkitSpeechRecognition();
+      console.log("aqui");
       recognition.lang = "pt-br";
       recognition.onresult = (event:any) => {
         const result = event.results[0][0].transcript;
